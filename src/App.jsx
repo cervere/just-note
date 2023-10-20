@@ -8,6 +8,8 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 import {Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
 Button, TextField,
 useMediaQuery, useTheme} from '@mui/material';
+import { fetchData, updateData } from './utils/serverApi.js';
+
 
 export const ThoughtContext = createContext();
 
@@ -16,16 +18,21 @@ const RegisterThought = () => {
   const [confirmationMessage, setConfirmationMessage] = useState('');
   const { thoughts, setThoughts } = useContext(ThoughtContext);
 
-  const handleAdd = (event) => {
+  const handleAdd = async (event) => {
     event.preventDefault();
     // console.log(event.target.elements);
     // const input = event.target.elements.item.value;
-    console.log(currentInput)
+    console.log(currentInput);
     if (currentInput) {
-      setThoughts([...thoughts, currentInput]);
+      const currentThought = await updateData('message', currentInput)
+      if(currentThought.status.success) {
+        setThoughts([...thoughts, {id: currentThought.status.id, message: currentInput}]);
+        setConfirmationMessage('Item added!');
+      } else {
+        setConfirmationMessage('Adding Item Failed!');
+      }
       // event.target.reset();
       setCurrentInput('');
-      setConfirmationMessage('Item added!');
       setTimeout(() => setConfirmationMessage(''), 2000); // Clear message after 2 seconds
     }
   };
@@ -143,6 +150,7 @@ const CircleList = ({ items }) => {
   };
 
   useEffect(() => {
+    console.log(items)
     // calculate size of circle based on text length
     circleRefs.current.forEach((circleRef) => {
       const circle = circleRef.current;
@@ -161,10 +169,10 @@ const CircleList = ({ items }) => {
       {items.map((item, index) => {
         const circleRef = React.createRef();
         circleRefs.current[index] = circleRef;
-        console.log(getParentBounds())
+        // console.log(getParentBounds())
         return (
           // <li key={index} className="circle-list-item">
-              <Circle key={index} circleRef={circleRef} item={item} parentBounds={getParentBounds()}/>
+              <Circle key={item?.id} circleRef={circleRef} item={item?.message} parentBounds={getParentBounds()}/>
           // </li>
         );
       })
@@ -179,6 +187,7 @@ const DisplayThoughts = () => {
   const { thoughts, setThoughts } = useContext(ThoughtContext);
   const [key, setKey] = useState(0);
 
+  console.log(thoughts)
   return (
   <div key={key} className="container">
     <CircleList items={thoughts} />
@@ -190,7 +199,17 @@ const DisplayThoughts = () => {
 }
 
 function App() {
-  const [thoughts, setThoughts] = useState(['This One']);
+  const [thoughts, setThoughts] = useState([]);
+
+  useEffect(() => {
+    fetchData('messages')
+      .then((result) => {
+        setThoughts(result.items);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  }, []);
 
   return (
 <ThoughtContext.Provider value={{ thoughts, setThoughts }}>
