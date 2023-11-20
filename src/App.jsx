@@ -9,9 +9,8 @@ import {Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
 Button, TextField,
 useMediaQuery, useTheme} from '@mui/material';
 import { fetchData, updateData } from './utils/serverApi.js';
-
-
-export const ThoughtContext = createContext();
+import MindSpace from './components/MindSpace';
+import { ThoughtContext } from './utils/ThoughtContext';
 
 const RegisterThought = () => {
   const [currentInput, setCurrentInput] = useState('');
@@ -218,13 +217,14 @@ function App() {
               <NavLink to={`/`} className="nav-link">
               <i className="fa-solid fa-cloud-bolt"></i>
               </NavLink>
-              <NavLink to={`/v`} className="nav-link">
+              <NavLink to={`/m`} className="nav-link">
               <i className="fa-solid fa-head-side-virus"></i>
                 </NavLink>
         </nav>
         <Routes>
         <Route exact path={`/`} element={<RegisterThought />} />
-        <Route path={`/v`} element={<DisplayThoughts />} />
+        <Route path={`/m`} element={<MindSpace />} />
+        <Route path={`/d`} element={<DisplayThoughts />} />
         </Routes>
 </div>
 </ThoughtContext.Provider>      
